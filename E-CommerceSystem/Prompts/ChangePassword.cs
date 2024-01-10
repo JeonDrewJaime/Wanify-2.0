@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -120,19 +120,23 @@ namespace E_CommerceSystem
                 {
                     conn.Open();
                     updatePass.ExecuteNonQuery();
+
+                    MySqlCommand deleteRecoveryCode = new MySqlCommand("UPDATE users SET recovery_code = '' WHERE userID = '"+UserID+"' ", conn);
+                    deleteRecoveryCode.ExecuteNonQuery();
+
                     this.Close();
                     new Login().Show();
 
                 }
-                catch (Exception )
+                catch (Exception ex )
                 {
-
+                    MessageBox.Show(ex.Message);
                 }
 
             }
             else
             {
-              
+                MessageBox.Show("Password does not match!");
             }
 
         }
