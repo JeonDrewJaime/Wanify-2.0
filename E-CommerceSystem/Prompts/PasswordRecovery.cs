@@ -1,4 +1,4 @@
-﻿using ComponentFactory.Krypton.Toolkit;
+using ComponentFactory.Krypton.Toolkit;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,6 +18,7 @@ namespace E_CommerceSystem
         Config dbConfig;
         MySqlConnection conn;
         SendEmailVerification sendCode;
+        SendSMSNotification sendSMSNotification;
         public PassRecovery()
         {
             InitializeComponent();
@@ -33,7 +34,7 @@ namespace E_CommerceSystem
 
         private void user_recoveryEmail_TextChanged(object sender, EventArgs e)
         {
-            if (user_recoveryEmail.Text == string.Empty)
+            if (user_phoneNumber.Text == string.Empty)
             {
 
                 required_FieldRecEmail.Visible = true;
@@ -57,10 +58,10 @@ namespace E_CommerceSystem
         private void continue_btn_Click(object sender, EventArgs e)
         {
             dbConfig = new Config();
-            sendCode = new SendEmailVerification();
+            sendSMSNotification = new SendSMSNotification();
             conn = dbConfig.getConnection();
 
-            MySqlCommand checkDBIfUserExists = new MySqlCommand("SELECT * FROM users WHERE Email = ('" + user_recoveryEmail.Text + "')", conn);
+            MySqlCommand checkDBIfUserExists = new MySqlCommand("SELECT * FROM users WHERE Phone = ('" + user_phoneNumber.Text + "')", conn);
 
             try
             {
@@ -70,20 +71,19 @@ namespace E_CommerceSystem
 
                 if (fetchRecoveryEmail.HasRows)
                 {
-
-                    string gmail = fetchRecoveryEmail.GetString("Email");
-                    string username = fetchRecoveryEmail.GetString("userName");
+                    string phone = fetchRecoveryEmail.GetString("Phone");
+                    string name = fetchRecoveryEmail.GetString("Name");
 
                     fetchRecoveryEmail.Close();
 
-                    string generatedRecoveryCode = sendCode.EmailVerificationCode(gmail, username);
+                    string generatedRecoveryCode = sendSMSNotification.sendSMS(phone, name);
 
-                    MySqlCommand insertRecoveryCode = new MySqlCommand("UPDATE users SET recovery_code = ('" + generatedRecoveryCode + "') WHERE Email = ('" + gmail + "')", conn);
+                    MySqlCommand insertRecoveryCode = new MySqlCommand("UPDATE users SET recovery_code = ('" + generatedRecoveryCode + "') WHERE Phone = ('" + phone + "')", conn);
                     MySqlDataReader insertCode = insertRecoveryCode.ExecuteReader();
                     insertCode.Close();
 
                     this.Close();
-                    new Verification(gmail).Show();
+                    new Verification(phone).Show();
 
                 }
                 else
